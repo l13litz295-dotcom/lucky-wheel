@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Wheel by Catalog - Custom Probability Edition</title>
+  <!-- โหลด Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- โหลด Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #111;
+      margin: 0;
+      padding: 20px;
+      font-family: 'Prompt', sans-serif;
+    }
+    
+    /* กรอบ iPhone 17 */
+    .iphone-screen {
+      width: 393px;
+      height: 852px;
+      background: radial-gradient(circle at center, #134e2a 0%, #0a2f1d 100%);
+      border-radius: 50px;
+      border: 12px solid #2d2d2d;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 65px 24px 40px 24px;
+      overflow: hidden;
+    }
+
+    /* --- กรอบลายหิมะเกาะรอบจอ --- */
+    .snow-border-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      pointer-events: none;
+      z-index: 70;
+    }
+
+    .snow-border-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      pointer-events: none;
+      z-index: 70;
+      transform: rotate(180deg);
+    }
+
+    /* ลายเกล็ดหิมะกระจายตามมุมขอบจอ */
+    .snowflake-decor {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.4rem;
+      pointer-events: none;
+      z-index: 71;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    .sf-1 { top: 70px; left: 15px; font-size: 1.2rem; }
+    .sf-2 { top: 80px; right: 15px; font-size: 1.6rem; }
+    .sf-3 { bottom: 65px; left: 18px; font-size: 1.5rem; }
+    .sf-4 { bottom: 75px; right: 18px; font-size: 1.1rem; }
+
+    /* --- เอฟเฟกต์หิมะตก --- */
+    .snow-fall {
+      position: absolute;
+      top: -20px;
+      color: #fff;
+      font-size: 1rem;
+      opacity: 0.8;
+      pointer-events: none;
+      z-index: 60;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(870px) rotate(360deg);
+        opacity: 0.2;
+      }
+    }
+
+    /* Canvas พลุ */
+    #confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 90;
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 15px;
+      width: 120px;
+      height: 35px;
+      background-color: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+
+    /* --- สายไฟดาวกระพริบ --- */
+    .fairy-lights {
+      position: absolute;
+      top: 55px;
+      width: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      z-index: 80;
+    }
+    .star-light {
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation: twinkle 1.2s infinite alternate ease-in-out;
+    }
+    .star-light:nth-child(1) { background: #ff4d4d; animation-delay: 0s; }
+    .star-light:nth-child(2) { background: #ffeb3b; animation-delay: 0.3s; }
+    .star-light:nth-child(3) { background: #4caf50; animation-delay: 0.6s; }
+    .star-light:nth-child(4) { background: #2196f3; animation-delay: 0.9s; }
+    .star-light:nth-child(5) { background: #ff4d4d; animation-delay: 0.2s; }
+    .star-light:nth-child(6) { background: #ffeb3b; animation-delay: 0.5s; }
+
+    @keyframes twinkle {
+      0% { transform: scale(0.8); opacity: 0.4; filter: drop-shadow(0 0 2px currentColor); }
+      100% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 8px currentColor); }
+    }
+
+    /* ส่วนหัว */
+    .header-text {
+      text-align: center;
+      margin-top: 10px;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .header-text h2 {
+      margin: 0;
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 1.6rem;
+      color: #ffffff;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      line-height: 1.3;
+    }
+    .header-text h2 span {
+      display: inline-block;
+      margin-top: 4px;
+      background-color: #5D4037;
+      color: #ffffff;
+      padding: 3px 14px;
+      border-radius: 12px;
+      font-size: 1.25rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-shadow: none;
+    }
+    .header-text p {
+      margin: 8px 0 0 0;
+      font-size: 0.85rem;
+      color: #e0e0e0;
+    }
+
+    /* วงล้อ */
+    .wheel-container {
+      position: relative;
+      width: 310px;
+      height: 310px;
+      margin: 10px 0;
+      z-index: 10;
+    }
+
+    /* เข็มชี้รางวัล */
+    .pointer {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 26px solid #ff2a2a;
+      z-index: 25;
+      filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.5));
+    }
+
+    #wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      transition: transform 4s cubic-bezier(0.15, 0.9, 0.15, 1);
+    }
+
+    /* Controls */
+    .controls {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 60;
+    }
+
+    /* --- กล่องข้อความคำพูดจากน้องแมว (Speech Bubble) --- */
+    .cat-speech-bubble {
+      position: absolute;
+      bottom: 155px;
+      right: 10px;
+      background: #ffffff;
+      color: #1b5e20;
+      border: 3px solid #d32f2f;
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      z-index: 95;
+      max-width: 230px;
+      
+      opacity: 0;
+      transform: scale(0.4) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+
+    .cat-speech-bubble.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .cat-speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -14px;
+      right: 35px;
+      border-width: 14px 10px 0 10px;
+      border-style: solid;
+      border-color: #d32f2f transparent transparent transparent;
+      display: block;
+      width: 0;
+    }
+    .cat-speech-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      right: 37px;
+      border-width: 11px 8px 0 8px;
+      border-style: solid;
+      border-color: #ffffff transparent transparent transparent;
+      display: block;
+      width: 0;
+      z-index: 1;
+    }
+
+    /* --- แมวซานต้า --- */
+    .santa-cat-wrapper {
+      position: absolute;
+      right: 0px;
+      bottom: 50px;
+      width: 115px;
+      height: 125px;
+      z-index: 80;
+      pointer-events: none;
+      animation: coldShiverHappy 1.2s infinite ease-in-out;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5));
+    }
+
+    @keyframes coldShiverHappy {
+      0% { transform: translateY(0) rotate(0deg) scale(1); }
+      10% { transform: translateY(-2px) rotate(-1.5deg) scale(1.02); }
+      20% { transform: translateY(1px) rotate(1.5deg) scale(0.99); }
+      30% { transform: translateY(-8px) rotate(-1deg) scale(1.03); }
+      40% { transform: translateY(1px) rotate(1deg) scale(1); }
+      50% { transform: translateY(-2px) rotate(-1.5deg); }
+      60% { transform: translateY(1px) rotate(1.5deg); }
+      70% { transform: translateY(-6px) rotate(-0.5deg); }
+      80% { transform: translateY(0) rotate(1deg); }
+      90% { transform: translateY(-1px) rotate(-1deg); }
+      100% { transform: translateY(0) rotate(0deg) scale(1); }
+    }
+
+    .eye-sparkle {
+      animation: eyeBlinkGlow 0.8s infinite alternate ease-in-out;
+      transform-origin: center;
+    }
+    @keyframes eyeBlinkGlow {
+      0% { transform: scale(0.7); opacity: 0.6; }
+      100% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .cold-puff {
+      position: absolute;
+      top: 40px;
+      left: 10px;
+      color: #b2ebf2;
+      font-size: 0.8rem;
+      opacity: 0.8;
+      animation: puffUp 2s infinite ease-out;
+    }
+    @keyframes puffUp {
+      0% { transform: translateY(0) scale(0.5); opacity: 0.8; }
+      100% { transform: translateY(-20px) scale(1.2); opacity: 0; }
+    }
+
+    .spin-btn {
+      width: 100%;
+      max-width: 280px;
+      padding: 16px 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+      
+      background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf5, #7a00ff, #ff00c8, #ff0000);
+      background-size: 400% 400%;
+      border: 2px solid #ffffff;
+      border-radius: 30px;
+      cursor: pointer;
+      
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3);
+      animation: rainbowGlow 3s ease infinite;
+      
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 100;
+      font-family: 'Prompt', sans-serif;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    @keyframes rainbowGlow {
+      0% {
+        background-position: 0% 50%;
+        box-shadow: 0 0 12px rgba(255, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+      50% {
+        background-position: 100% 50%;
+        box-shadow: 0 0 22px rgba(0, 255, 213, 0.9), 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+      100% {
+        background-position: 0% 50%;
+        box-shadow: 0 0 12px rgba(255, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    .spin-btn:active {
+      transform: scale(0.96);
+    }
+
+    .spin-btn:disabled {
+      background: #444444;
+      animation: none;
+      border-color: #666666;
+      color: #aaaaaa;
+      box-shadow: none;
+      cursor: not-allowed;
+      text-shadow: none;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="iphone-screen">
+    <div class="dynamic-island"></div>
+    
+    <!-- กรอบหิมะเกาะ -->
+    <svg class="snow-border-top" viewBox="0 0 393 60" preserveAspectRatio="none">
+      <path d="M0,0 L393,0 L393,25 Q350,45 320,20 Q280,40 240,15 Q200,35 160,20 Q120,40 80,15 Q40,30 0,15 Z" fill="#ffffff" opacity="0.95"/>
+      <path d="M0,0 L393,0 L393,15 Q360,30 330,12 Q290,28 250,10 Q210,25 170,12 Q130,28 90,10 Q50,22 0,10 Z" fill="#e0f7fa" opacity="0.8"/>
+    </svg>
+
+    <svg class="snow-border-bottom" viewBox="0 0 393 60" preserveAspectRatio="none">
+      <path d="M0,0 L393,0 L393,25 Q350,45 320,20 Q280,40 240,15 Q200,35 160,20 Q120,40 80,15 Q40,30 0,15 Z" fill="#ffffff" opacity="0.95"/>
+    </svg>
+
+    <!-- เกล็ดหิมะตามขอบ -->
+    <div class="snowflake-decor sf-1">❄</div>
+    <div class="snowflake-decor sf-2">❆</div>
+    <div class="snowflake-decor sf-3">❆</div>
+    <div class="snowflake-decor sf-4">❄</div>
+
+    <!-- หิมะโปรยลงมา -->
+    <div class="snow-fall" style="left: 10%; animation-duration: 6s; animation-delay: 0s;">❄</div>
+    <div class="snow-fall" style="left: 30%; animation-duration: 8s; animation-delay: 2s;">❆</div>
+    <div class="snow-fall" style="left: 55%; animation-duration: 5s; animation-delay: 1s;">❄</div>
+    <div class="snow-fall" style="left: 75%; animation-duration: 7s; animation-delay: 3s;">❆</div>
+    <div class="snow-fall" style="left: 90%; animation-duration: 9s; animation-delay: 1.5s;">❄</div>
+
+    <!-- สายไฟดาวกระพริบ -->
+    <div class="fairy-lights">
+      <div class="star-light"></div>
+      <div class="star-light"></div>
+      <div class="star-light"></div>
+      <div class="star-light"></div>
+      <div class="star-light"></div>
+      <div class="star-light"></div>
+    </div>
+    
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="header-text">
+      <h2>🎄 LUCKY WHEEL <br><span>BY CATALOG</span> 🎁</h2>
+      <p>หมุนวงล้อรับของขวัญส่วนลดคริสต์มาส!</p>
+    </div>
+
+    <div class="wheel-container">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="350" height="350"></canvas>
+    </div>
+
+    <div class="controls">
+      <!-- กล่องคำพูดพูดออกจากแมว -->
+      <div id="catSpeech" class="cat-speech-bubble">
+        เหมียว! ยินดีด้วยน้า 🎉<br>คุณได้รับ <span id="rewardText" style="color:#d32f2f; font-size:1.1rem; font-weight:800;">-</span>
+      </div>
+      
+      <!-- แมวซานต้า -->
+      <div class="santa-cat-wrapper">
+        <div class="cold-puff">💨 ❄</div>
+        <svg viewBox="0 0 130 140" width="100%" height="100%">
+          <!-- ลำตัวซานต้า -->
+          <path d="M38,90 C25,108 20,135 38,138 L92,138 C110,135 105,108 92,90 Z" fill="#d32f2f"/>
+          <!-- ปกเสื้อเฟอร์สีขาว -->
+          <path d="M40,90 Q65,102 90,90 Q65,112 40,90 Z" fill="#ffffff"/>
+
+          <!-- แขนขวาเอื้อมชี้ขึ้นวงล้อ -->
+          <path d="M32,96 L12,68 C7,60 18,54 25,60 L40,84 Z" fill="#d32f2f"/>
+          <!-- ถุงมือสีขาว -->
+          <circle cx="12" cy="65" r="8" fill="#ffffff"/>
+          <path d="M12,62 L7,42 C5,38 13,37 15,42 L17,60 Z" fill="#ffffff" stroke="#e0e0e0" stroke-width="1.5"/>
+
+          <!-- หัวแมวส้ม -->
+          <circle cx="65" cy="68" r="35" fill="#f5a623"/>
+          <path d="M65,33 C45,33 30,50 30,68 C30,86 45,100 65,100 C85,100 100,86 100,68 C100,50 85,33 65,33 Z" fill="#f5a623"/>
+          
+          <!-- หูแมว -->
+          <polygon points="36,46 22,18 50,35" fill="#f5a623"/>
+          <polygon points="38,44 28,24 48,35" fill="#f8bd6d"/>
+          <polygon points="94,46 108,18 80,35" fill="#f5a623"/>
+          <polygon points="92,44 102,24 82,35" fill="#f8bd6d"/>
+
+          <!-- ตาแมววิ้งๆ -->
+          <ellipse cx="48" cy="62" rx="7" ry="9" fill="#1b1b1b"/>
+          <ellipse cx="82" cy="62" rx="7" ry="9" fill="#1b1b1b"/>
+          
+          <g class="eye-sparkle">
+            <circle cx="46" cy="59" r="3.5" fill="#ffffff"/>
+            <path d="M46,53 L46,65 M40,59 L52,59" stroke="#ffffff" stroke-width="1.5"/>
+            <circle cx="51" cy="65" r="1.5" fill="#ffffff"/>
+            
+            <circle cx="80" cy="59" r="3.5" fill="#ffffff"/>
+            <path d="M80,53 L80,65 M74,59 L86,59" stroke="#ffffff" stroke-width="1.5"/>
+            <circle cx="85" cy="65" r="1.5" fill="#ffffff"/>
+          </g>
+
+          <!-- คิ้ว -->
+          <path d="M42,50 Q48,46 54,50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <path d="M76,50 Q82,46 88,50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+          <!-- จมูก -->
+          <polygon points="62,70 68,70 65,73" fill="#ff7043"/>
+
+          <!-- ปากอ้าดีใจ -->
+          <path d="M56,75 Q65,74 74,75 Q74,88 65,88 Q56,88 56,75 Z" fill="#b71c1c"/>
+          <path d="M59,81 Q65,77 71,81 Q69,86 65,86 Q61,86 59,81 Z" fill="#ff8a80"/>
+
+          <!-- แก้มชมพู -->
+          <ellipse cx="38" cy="72" rx="6" ry="4" fill="#ff5252" opacity="0.8"/>
+          <ellipse cx="92" cy="72" rx="6" ry="4" fill="#ff5252" opacity="0.8"/>
+
+          <!-- หนวดสีขาว -->
+          <g opacity="0.95">
+            <path d="M20,60 Q36,64 48,68" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M14,71 Q33,71 47,73" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M18,82 Q36,78 48,75" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+
+            <path d="M110,60 Q94,64 82,68" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M116,71 Q97,71 83,73" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M112,82 Q94,78 82,75" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          </g>
+
+          <!-- หมวกซานต้า -->
+          <path d="M33,44 Q65,10 94,26 Q112,38 108,52" fill="#d32f2f"/>
+          <path d="M28,46 Q65,33 102,46" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none"/>
+          <circle cx="108" cy="52" r="10" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"/>
+        </svg>
+      </div>
+
+      <button id="spinBtn" class="spin-btn">✨ หมุนรับส่วนลด ✨</button>
+    </div>
+  </div>
+
+  <script>
+    const wheelCanvas = document.getElementById('wheel');
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    
+    const ctx = wheelCanvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    const catSpeech = document.getElementById('catSpeech');
+    const rewardText = document.getElementById('rewardText');
+
+    const myConfetti = confetti.create(confettiCanvas, {
+      resize: true,
+      useWorker: true
+    });
+
+    // กำหนดรายการรางวัลพร้อมเปอร์เซ็นต์โอกาสสุ่มออก (weight)
+    const rewards = [
+      { text: "ส่วนลด 5%", color: "#2e7d32", weight: 50 },  // โอกาส 50%
+      { text: "ส่วนลด 10%", color: "#c62828", weight: 40 }, // โอกาส 40%
+      { text: "ส่วนลด 15%", color: "#f57f17", weight: 8 },  // โอกาส 8%
+      { text: "ส่วนลด 20%", color: "#0288d1", weight: 2 }   // โอกาส 2%
+    ];
+
+    const numSlices = rewards.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+    let currentRotation = 0;
+    let hasSpun = false;
+
+    function drawWheel() {
+      const canvasW = wheelCanvas.width;
+      const canvasH = wheelCanvas.height;
+      const centerX = canvasW / 2;
+      const centerY = canvasH / 2;
+      const radius = canvasW / 2 - 10;
+
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      for (let i = 0; i < numSlices; i++) {
+        const startAngle = i * sliceAngle - Math.PI / 2;
+        const endAngle = startAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = rewards[i].color;
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 20px 'Prompt', sans-serif";
+        ctx.fillText(rewards[i].text, radius - 30, 7);
+        ctx.restore();
+      }
+    }
+
+    // ฟังก์ชันคำนวณการสุ่มแบบถ่วงน้ำหนัก (Weighted Random)
+    function getRandomPrizeIndex() {
+      const totalWeight = rewards.reduce((sum, item) => sum + item.weight, 0);
+      let randomNum = Math.random() * totalWeight;
+
+      for (let i = 0; i < rewards.length; i++) {
+        if (randomNum < rewards[i].weight) {
+          return i;
+        }
+        randomNum -= rewards[i].weight;
+      }
+      return 0; // fallback เผื่อไว้
+    }
+
+    function triggerConfetti() {
+      myConfetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.6, x: 0.2 },
+        colors: ['#ffffff', '#ff0000', '#00ff00', '#ffd700', '#00e5ff']
+      });
+      
+      myConfetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.6, x: 0.8 },
+        colors: ['#ffffff', '#ff0000', '#00ff00', '#ffd700', '#00e5ff']
+      });
+    }
+
+    function spinWheel() {
+      if (hasSpun) return;
+      
+      hasSpun = true;
+      spinBtn.disabled = true;
+      spinBtn.innerText = "กำลังหมุนวงล้อ...";
+      
+      catSpeech.classList.remove('active');
+      myConfetti.reset(); 
+
+      // สุ่มผลรางวัลตามเปอร์เซ็นต์ที่กำหนดไว้
+      const prizeIndex = getRandomPrizeIndex();
+      
+      const degreesPerSlice = 360 / numSlices;
+      const targetDegreeOnWheel = 360 - (prizeIndex * degreesPerSlice + degreesPerSlice / 2);
+      
+      const extraRounds = 360 * 5; 
+      const currentMod = currentRotation % 360;
+      const rotationNeeded = extraRounds + targetDegreeOnWheel - currentMod;
+      currentRotation += rotationNeeded;
+
+      wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        spinBtn.innerText = "🔒 หมุนได้ครั้งเดียว (รีเฟรชเพื่อเล่นใหม่)";
+        
+        rewardText.innerText = rewards[prizeIndex].text;
+        catSpeech.classList.add('active');
+        
+        triggerConfetti();
+      }, 4000);
+    }
+
+    drawWheel();
+    spinBtn.addEventListener('click', spinWheel);
+  </script>
+
+</body>
+</html>
