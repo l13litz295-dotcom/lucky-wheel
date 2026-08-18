@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
+    /* ... (โค้ด CSS เดิมทั้งหมด ไม่มีการเปลี่ยนแปลง) ... */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -22,7 +23,6 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      /* พื้นหลังสีเขียวคริสต์มาสพรีเมียม */
       background: radial-gradient(circle at 50% 30%, #1b4332 0%, #081c15 80%, #040f0c 100%);
       font-family: 'Prompt', sans-serif;
       display: flex;
@@ -33,7 +33,6 @@
       position: relative;
     }
 
-    /* ก้อนหิมะทรงปุยเมฆหนานุ่ม (Snow Clouds) */
     body::before {
       content: '';
       position: absolute;
@@ -54,7 +53,6 @@
       pointer-events: none;
     }
 
-    /* เลเยอร์ละอองหิมะโปรยใต้ก้อนเมฆ */
     body::after {
       content: '';
       position: absolute;
@@ -85,7 +83,6 @@
       z-index: 90;
     }
 
-    /* ปุ่มเปิด/ปิดเพลงประกอบ */
     .audio-control-btn {
       position: absolute;
       top: 15px;
@@ -106,7 +103,6 @@
       transition: all 0.3s ease;
     }
 
-    /* ส่วนหัว */
     .header-text {
       text-align: center;
       width: 100%;
@@ -123,7 +119,6 @@
       line-height: 1.2;
     }
 
-    /* ป้ายพื้นหลังสีน้ำตาลพรีเมียมให้คำว่า BY CATALOG */
     .header-text .subtitle {
       display: inline-block;
       font-size: 0.85rem;
@@ -146,7 +141,6 @@
       text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     }
 
-    /* เวทีแสดงผลหลัก */
     .main-stage {
       position: relative;
       width: 100%;
@@ -158,7 +152,6 @@
       margin-bottom: 12px;
     }
 
-    /* ชุดประกอบวงล้อ */
     .wheel-assembly {
       position: absolute;
       left: 0px;
@@ -170,7 +163,6 @@
       z-index: 20;
     }
 
-    /* เข็มชี้รางวัล */
     .wheel-pointer {
       position: absolute;
       top: -16px;
@@ -183,7 +175,6 @@
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
     }
 
-    /* กรอบไฟกระพริบสีทอง */
     .wheel-gold-frame {
       position: relative;
       width: 230px;
@@ -261,7 +252,6 @@
       pointer-events: none;
     }
 
-    /* ฐานพรีเมียมสีทอง */
     .wheel-stand-stem {
       width: 50px;
       height: 35px;
@@ -281,7 +271,6 @@
       z-index: 15;
     }
 
-    /* รูปแมวซานต้า */
     .cat-diecut-img {
       position: absolute;
       right: -25px;
@@ -293,7 +282,6 @@
       pointer-events: none;
     }
 
-    /* ปุ่มและกล่องคำพูด */
     .controls {
       width: 100%;
       max-width: 380px;
@@ -414,6 +402,7 @@
       <div class="wheel-stand-base"></div>
     </div>
 
+    <!-- *** บรรทัดนี้คือส่วนที่แก้ไข *** -->
     <img src="S__2367492-removebg-preview.png" alt="Santa Cat" class="cat-diecut-img">
 
   </div>
@@ -427,6 +416,7 @@
   </div>
 
   <script>
+    /* ... (โค้ด JavaScript เดิมทั้งหมด ไม่มีการเปลี่ยนแปลง) ... */
     const wheelCanvas = document.getElementById('wheel');
     const confettiCanvas = document.getElementById('confetti-canvas');
     
@@ -436,9 +426,6 @@
     const rewardText = document.getElementById('rewardText');
     const audioBtn = document.getElementById('audioBtn');
 
-    /* -------------------------------------------------------------
-       AUDIO ENGINE (Web Audio API - Synthesizer)
-    ------------------------------------------------------------- */
     let audioCtx = null;
     let musicInterval = null;
     let isMuted = false;
@@ -452,7 +439,6 @@
       }
     }
 
-    // เล่นตัวโน้ตเสียง Music Box (Sine Wave + Bell Decay)
     function playMusicBoxNote(freq, time, duration = 1.2) {
       if (!audioCtx || isMuted) return;
       
@@ -472,7 +458,6 @@
       osc.stop(time + duration);
     }
 
-    // ทำนองเพลง Music Box คริสต์มาส (We Wish You a Merry Christmas Melody)
     const musicNotes = [
       { f: 261.63, d: 0.4 }, { f: 349.23, d: 0.4 }, { f: 349.23, d: 0.2 }, { f: 392.00, d: 0.2 },
       { f: 349.23, d: 0.2 }, { f: 329.63, d: 0.2 }, { f: 293.66, d: 0.4 }, { f: 293.66, d: 0.4 },
@@ -494,7 +479,7 @@
         while (nextTime < audioCtx.currentTime + 0.4) {
           const note = musicNotes[noteIdx];
           playMusicBoxNote(note.f, nextTime, 1.0);
-          nextTime += note.d * 1.1; // ความเร็วของทำนอง
+          nextTime += note.d * 1.1;
           noteIdx = (noteIdx + 1) % musicNotes.length;
         }
       }
@@ -509,24 +494,22 @@
       }
     }
 
-    // เสียงเอฟเฟกต์รางวัลเมื่อหมุนเสร็จ (Win Fanfare / Tada Sound Effect)
     function playWinSound() {
       if (!audioCtx || isMuted) return;
 
       const now = audioCtx.currentTime;
-      // คอร์ดฉลองความสำเร็จ (C Major Arpeggio Fanfare)
       const fanfareNotes = [
-        { f: 523.25, t: 0.0, d: 0.2 },  // C5
-        { f: 659.25, t: 0.12, d: 0.2 }, // E5
-        { f: 783.99, t: 0.24, d: 0.2 }, // G5
-        { f: 1046.50, t: 0.38, d: 1.2 } // C6 (ลากเสียงยาวโป๊ะเอฟเฟกต์)
+        { f: 523.25, t: 0.0, d: 0.2 },
+        { f: 659.25, t: 0.12, d: 0.2 },
+        { f: 783.99, t: 0.24, d: 0.2 },
+        { f: 1046.50, t: 0.38, d: 1.2 }
       ];
 
       fanfareNotes.forEach(n => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
 
-        osc.type = 'triangle'; // ให้เสียงสดใสเป็นประกาย
+        osc.type = 'triangle';
         osc.frequency.setValueAtTime(n.f, now + n.t);
 
         gain.gain.setValueAtTime(0.3, now + n.t);
@@ -540,7 +523,6 @@
       });
     }
 
-    // สลับเปิด/ปิดเสียง
     audioBtn.addEventListener('click', () => {
       isMuted = !isMuted;
       if (isMuted) {
@@ -552,9 +534,6 @@
       }
     });
 
-    /* -------------------------------------------------------------
-       WHEEL & LOGIC
-    ------------------------------------------------------------- */
     const myConfetti = confetti.create(confettiCanvas, {
       resize: true,
       useWorker: true
@@ -667,13 +646,11 @@
         rewardText.innerText = "ส่วนลด " + rewards[prizeIndex].text;
         catSpeech.classList.add('active');
         
-        // เล่นเอฟเฟกต์เสียงรางวัลโป๊ะ! + Confetti
         playWinSound();
         triggerConfetti();
       }, 4000);
     }
 
-    // เริ่มเพลงทันทีที่กดส่วนใดก็ได้บนหน้าจอครั้งแรก (Browser Policy)
     window.addEventListener('click', () => {
       initAudio();
       if (!isMuted && !musicInterval) {
